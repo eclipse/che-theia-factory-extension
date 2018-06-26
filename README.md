@@ -28,7 +28,7 @@ When:
 
             "env": {
               "CHE_MACHINE_NAME": "ws/theia",
-              "THEIA_EXTENSIONS": "che-theia-factory:https://github.com/eclipse/che-theia-factory-extension.git"
+              "THEIA_PLUGINS": "@eclipse/che-theia-factory:https://github.com/eclipse/che-theia-factory-extension.git"
             }
 
 Then:
