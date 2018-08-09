@@ -20,6 +20,9 @@ import { IFactoryAction } from './types';
 import URI from '@theia/core/lib/common/uri';
 import { EditorManager } from '@theia/editor/lib/browser';
 import { FrontendApplicationStateService } from '@theia/core/lib/browser/frontend-application-state';
+import { TaskService } from '@theia/task/lib/browser';
+
+const CHE_TASK_TYPE = 'che';
 
 /**
  * Enumeration ID's of ide actions.
@@ -56,6 +59,7 @@ export class FactoryTheiaClient implements FrontendApplicationContribution {
                 @inject(EnvVariablesServer) private readonly envVariablesServer: EnvVariablesServer,
                 @inject(EditorManager) protected readonly editorManager: EditorManager,
                 @inject(Git) protected readonly git: Git,
+                @inject(TaskService) private readonly taskServer: TaskService,
                 @inject(FrontendApplicationStateService) protected readonly frontendApplicationStateService: FrontendApplicationStateService,
                 @inject(FactoryTheiaManager) private readonly factoryManager: FactoryTheiaManager) {
         this.frontendApplicationStateService.reachedState('ready').then(() => {
@@ -80,9 +84,11 @@ export class FactoryTheiaClient implements FrontendApplicationContribution {
                         case ActionId.OPEN_FILE:
                             return this.openFile(onProjectsLoadedAction.properties!.file);
                         case ActionId.RUN_COMMAND:
-                            // not implemented yet
 
-                            return Promise.resolve();
+                            if (onProjectsLoadedAction.properties && onProjectsLoadedAction.properties!.name) {
+                                return this.taskServer.run(CHE_TASK_TYPE, onProjectsLoadedAction.properties!.name!);
+                            }
+                            return Promise.reject(`A property name for the actionId '${onProjectsLoadedAction.id}' is not defined!`);
                         default:
                             return Promise.reject(`Action id '${onProjectsLoadedAction.id}' is not supported yet!`);
                     }
@@ -167,11 +173,12 @@ export class FactoryTheiaClient implements FrontendApplicationContribution {
             }));
 
         });
-        Promise.all(importProjectPromises).then(() => {
-            if (projects.length) {
-                this.projectsLoadedEmitter.fire({actions: onProjectsLoadedActions});
-            }
-        });
+        await Promise.all(importProjectPromises);
+        if (!projects.length) {
+            return;
+        }
+        await new Promise(resolve => setTimeout(resolve));
+        this.projectsLoadedEmitter.fire({actions: onProjectsLoadedActions});
     }
 
     protected async openFile(relativePath: string | undefined): Promise<void> {
