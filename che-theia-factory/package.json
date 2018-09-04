@@ -10,9 +10,9 @@
   ],
   "dependencies": {
     "@eclipse-che/workspace-client": "latest",
-    "@theia/core": "0.3.13",
-    "@theia/editor": "0.3.13",
-    "@theia/git": "0.3.13",
+    "@theia/core": "0.3.14",
+    "@theia/editor": "0.3.14",
+    "@theia/git": "0.3.14",
     "axios": "0.18.0"
   },
   "devDependencies": {
