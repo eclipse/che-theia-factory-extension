@@ -9,33 +9,198 @@ Provides basic factory client side clone feature
 From the factory definition:
 - cloning projects defined in the factory definition
 - checking out the right branch if needed
+- executing post loading actions such as running CHE commands/tasks or openning a specific file. 
 
 ## Testing this extension
-Having that
+### Setting up
+1. Clone [eclipse/che](git@github.com:eclipse/che.git). 
+    ```
+    $ git clone https://github.com/eclipse/che.git
+    $ cd che/dockerfiles/theia
+    ```
+2.  Add `che-theia-task-extension` to `src/extensions.js`.
+    ```
+        {
+            "name": "@eclipse-che/theia-task-extension",
+            "source": "https://github.com/eclipse/che-theia-task-plugin.git",
+            "folder": "che-theia-task-extension",
+            "checkoutTo": "master",
+            "type": "git"
+        },
+    ```
 
-- We have two or three Github projects to import in a factory,
-- One of the project has a specific branch to checkout.
+3. Build the needed "mydockerorg/che-theia:nightly" image with using build script
+    ```
+   $ ./build.sh --organization:mydockerorg
+    ```
+4. Push "mydockerorg/che-theia:nightly" image into your repo or use it locally.
 
-When:
+5. The following mount should be set in the che.env file: CHE_WORKSPACE_VOLUME=/var/run/docker.sock:/var/run/docker.sock;
+Change and restart CHE if it wasn't.
 
-1. Create a new empty workspace (blank or any other type but that works with the Che legacy IDE).
-2. Start the workspace. Import projects from Che legacy IDE (we do that so the project types are defined, could also be done manually without having to start a workspace). 
-3. Checkout the specific branch for one of the project.
-3. Create a new factory from the created workspace.
-4. Edit the factory and select `from a stack` and `Java Theia (OpenShift)`
-5. Edit the configuration and add to the theia machine the environment variable THEIA_EXTENSIONS
-
-
-            "env": {
-              "CHE_MACHINE_NAME": "ws/theia",
-              "THEIA_EXTENSIONS": "che-theia-factory:https://github.com/eclipse/che-theia-factory-extension.git"
+7. Create a new factory from this factory.json file as a working example.  Change  "mydockerorg/che-theia:nightly"  image to your own from steps 3 and 4.
+    ```
+    {
+        "v":"4.0",
+        "name":"theiadev_factory",
+        "workspace":{
+            "environments":{
+                "default":{
+                    "machines":{
+                        "theia":{
+                            "attributes":{},
+                            "servers":{
+                                "theia":{
+                                    "attributes":{
+                                        "type":"ide"
+                                    },
+                                    "port":"3000",
+                                    "protocol":"http"
+                                },
+                                "theia-dev":{
+                                    "attributes":{
+                                        "type":"ide-dev"
+                                    },
+                                    "port":"3030",
+                                    "protocol":"http"
+                                }
+                            },
+                            "volumes":{
+                                "projects":{
+                                    "path":"/projects"
+                                },
+                                "theia":{
+                                    "path":"/home/theia"
+                                }
+                            },
+                            "installers":[],
+                            "env":{}
+                        },
+                        "machine-exec":{
+                            "attributes":{
+                                "memoryLimitBytes":"2684354560"
+                            },
+                            "servers":{
+                                "terminal-exec":{
+                                    "attributes":{
+                                        "type":"terminal"
+                                    },
+                                    "port":"4444",
+                                    "protocol":"ws"
+                                }
+                            },
+                            "volumes":{},
+                            "installers":[],
+                            "env":{}
+                        },
+                        "dev-machine":{
+                            "attributes":{},
+                            "servers":{
+                                "theia-dev":{
+                                    "attributes":{},
+                                    "port":"3030",
+                                    "protocol":"http"
+                                }
+                            },
+                            "volumes":{
+                                "projects":{
+                                    "path":"/projects"
+                                }
+                            },
+                            "installers":[],
+                            "env":{}
+                        }
+                    },
+                    "recipe":{
+                        "type":"compose",
+                        "content":"services:\n machine-exec:\n  image: eclipse/che-machine-exec:latest\n theia:\n  image: mydockerorg/che-theia:nightly\n  mem_limit: 1073741824\n dev-machine:\n  image: eclipse/che-dev:nightly\n  mem_limit: 2147483648\n  depends_on:\n    - theia",
+                        "contentType":"application/x-yaml"
+                    }
+                }
+            },
+            "defaultEnv":"default",
+            "projects":[
+                {
+                    "links":[],
+                    "name":"che-theia-factory",
+                    "attributes":{},
+                    "type":"typescript",
+                    "source":{
+                        "location":"https://github.com/eclipse/che-theia-factory-extension.git",
+                        "type":"git",
+                        "parameters":{
+                            "branch":"master"
+                        }
+                    },
+                    "path":"/che-theia-factory",
+                    "problems":[],
+                    "mixins":[]
+                }
+            ],
+            "name":"theiadev_factory",
+            "attributes":{},
+            "commands":[
+                {
+                    "commandLine":"cd /projects/che-theia-factory/\nyarn\nyarn rebuild:browser\ncd /projects/che-theia-factory/browser-app\nmkdir -p /projects/theiadev_projects\nexport CHE_PROJECTS_ROOT=/projects/theiadev_projects\nyarn start /projects/theiadev_projects --hostname=0.0.0.0 --port=3030",
+                    "name":"yarn start",
+                    "attributes":{
+                        "machineName":"theia",
+                        "previewUrl":"${server.theia-dev}",
+                        "goal":"Build"
+                    },
+                    "type":"custom"
+                },
+                {
+                    "commandLine":"cd /projects/che-theia-factory/che-theia-factory\nyarn watch",
+                    "name":"yarn watch",
+                    "attributes":{
+                        "goal":"Build",
+                        "machineName":"theia"
+                    },
+                    "type":"custom"
+                },
+                {
+                    "commandLine":"cd /projects/che-theia-factory/browser-app;\nyarn watch",
+                    "name":"yarn watch browserapp",
+                    "attributes":{
+                        "goal":"Build",
+                        "machineName":"theia"
+                    },
+                    "type":"custom"
+                }
+            ],
+            "links":[]
+        },
+        "ide":{
+            "onProjectsLoaded":{
+                "actions":[
+                    {
+                        "properties":{
+                            "file":"/che-theia-factory/README.md"
+                        },
+                        "id":"openFile"
+                    },
+                    {
+                        "properties":{
+                            "name":"yarn start"
+                        },
+                        "id":"runCommand"
+                    }
+                ]
             }
+        }
+    }
+    ```
+### Test the factory extension
 
-Then:
+When opening the previous factory we expect that it would:
 
-- Running the factory, should clone the projects defined
-- The project with the checked out branch should have the right branch checkedout
-
+1. Create a new workspace and launch Theia
+2. Clone the https://github.com/eclipse/che-theia-factory-extension.git project
+3. Open the file README.md of the cloned project.
+4. Configure few commands to build and run
+5. Run the command (task) that build and run another Theia instance with the cloned factory project. The user should see the output of the command.
+6. Be able to access to the "under development" Theia application. Through the preview URL.
 
 ## Getting started
 
