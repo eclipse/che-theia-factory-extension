@@ -19,7 +19,13 @@ export class FactoryService implements IFactoryService {
     private readonly factoryUrl = '/factory';
 
     constructor(private readonly axios: AxiosInstance,
-        private readonly baseUrl: string) {
+        private readonly baseUrl: string,
+        headers: {[headerTitle: string]: string} = {}) {
+        for (const title in headers) {
+            if (headers.hasOwnProperty(title)) {
+                this.axios.defaults.headers.common[title] = headers[title];
+            }
+        }
     }
 
     public getById<T>(factoryId: string): AxiosPromise<T> {

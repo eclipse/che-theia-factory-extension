@@ -10,7 +10,7 @@
 
 import { injectable, inject } from 'inversify';
 import { FactoryService, IFactoryService } from './resources';
-import { EnvVariablesServer } from '@theia/core/lib/common/env-variables';
+import { EnvVariablesServer, EnvVariable } from '@theia/core/lib/common/env-variables';
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
 import { IFactory, IFactoryAction } from './types';
 import { IProjectConfig } from '@eclipse-che/workspace-client';
@@ -24,6 +24,7 @@ export class FactoryTheiaManager {
     private factoryId: string;
     private factoryService: IFactoryService | undefined;
     private currentFactory: IFactory | undefined;
+    private envVariables: EnvVariable[] | undefined;
 
     constructor(
         @inject(EnvVariablesServer) private readonly envVariablesServer: EnvVariablesServer
@@ -32,11 +33,16 @@ export class FactoryTheiaManager {
         if (!this.factoryId) {
             return;
         }
-        this.envVariablesServer.getValue('CHE_API_EXTERNAL').then(cheApiExternalVar => {
-            if (cheApiExternalVar) {
-                this.factoryService = new FactoryService(FactoryTheiaManager.axiosInstance, String(cheApiExternalVar.value));
-            }
-        });
+        this.fetchEnvironementVariables();
+        const cheApiExternalVar = this.getEnvVariable('CHE_API_EXTERNAL');
+        const cheMachineToken = this.getEnvVariable('CHE_MACHINE_TOKEN');
+        if (cheApiExternalVar) {
+            this.factoryService = new FactoryService(
+                FactoryTheiaManager.axiosInstance,
+                String(cheApiExternalVar.value),
+                cheMachineToken ? {"Authorization": "Bearer " + cheMachineToken.value} : undefined
+                );
+        }
     }
 
     async fetchCurrentFactory(): Promise<IFactory | undefined> {
@@ -88,5 +94,22 @@ export class FactoryTheiaManager {
         }
 
         return factory.ide.onAppClosed.actions;
+    }
+
+    async fetchEnvironementVariables() {
+        this.envVariables = await this.envVariablesServer.getVariables();
+        if (!this.envVariables) {
+            return;
+        }
+
+    }
+
+    getEnvVariable(name: string): EnvVariable | undefined {
+        if (!this.envVariables) {
+            return undefined;
+        }
+        return this.envVariables.find((envVariable) => {
+            return envVariable.name === name;
+        });
     }
 }
