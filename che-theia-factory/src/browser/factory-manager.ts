@@ -33,16 +33,23 @@ export class FactoryTheiaManager {
         if (!this.factoryId) {
             return;
         }
-        this.fetchEnvironementVariables();
-        const cheApiExternalVar = this.getEnvVariable('CHE_API_EXTERNAL');
-        const cheMachineToken = this.getEnvVariable('CHE_MACHINE_TOKEN');
-        if (cheApiExternalVar) {
-            this.factoryService = new FactoryService(
-                FactoryTheiaManager.axiosInstance,
-                String(cheApiExternalVar.value),
-                cheMachineToken ? {"Authorization": "Bearer " + cheMachineToken.value} : undefined
-                );
-        }
+        this.fetchEnvironementVariables().then(() => {
+            const cheApiExternalVar = this.getEnvVariable('CHE_API_EXTERNAL');
+            const cheMachineToken = this.getEnvVariable('CHE_MACHINE_TOKEN');
+            if (cheApiExternalVar) {
+                if (cheMachineToken && cheMachineToken.value) {
+                    this.factoryService = new FactoryService(
+                        FactoryTheiaManager.axiosInstance,
+                        String(cheApiExternalVar.value) ,
+                        cheMachineToken ? {"Authorization": "Bearer " + cheMachineToken.value} : undefined
+                        );
+                } else {
+                    this.factoryService = new FactoryService(
+                        FactoryTheiaManager.axiosInstance,
+                        String(cheApiExternalVar.value));
+                }
+            }
+        });
     }
 
     async fetchCurrentFactory(): Promise<IFactory | undefined> {
