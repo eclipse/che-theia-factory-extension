@@ -1,5 +1,5 @@
 # Che Theia factory
-This Theia extension is performing additional actions while creating/starting a Che workspace through a factory URL.
+This Theia plug-in is performing additional actions while creating/starting a Che workspace through a factory URL.
 Provides basic factory client side clone feature
 
 - retrieving the factory-id from the URL
@@ -12,7 +12,7 @@ From the factory definition:
 - executing post loading actions such as running CHE commands/tasks or openning a specific file. 
 
 ## Testing this extension
-### Setting up
+### Setting up [deprecated: https://github.com/eclipse/che/issues/11632]
 1. Clone [eclipse/che](git@github.com:eclipse/che.git). 
     ```
     $ git clone https://github.com/eclipse/che.git
@@ -191,7 +191,7 @@ Change and restart CHE if it wasn't.
         }
     }
     ```
-### Test the factory extension
+### Test the factory extension. [deprecated: See https://github.com/eclipse/che/issues/11632]
 
 When opening the previous factory we expect that it would:
 
@@ -201,54 +201,3 @@ When opening the previous factory we expect that it would:
 4. Configure few commands to build and run
 5. Run the command (task) that build and run another Theia instance with the cloned factory project. The user should see the output of the command.
 6. Be able to access to the "under development" Theia application. Through the preview URL.
-
-## Getting started
-
-Install [nvm](https://github.com/creationix/nvm#install-script).
-
-    curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.5/install.sh | bash
-
-Install npm and node.
-
-    nvm install 8
-    nvm use 8
-
-Install yarn.
-
-    npm install -g yarn
-
-## Running the browser example
-
-    yarn rebuild:browser
-    cd browser-app
-    yarn start
-
-Open http://localhost:3000 in the browser.
-
-## Developing with the browser example
-
-Start watching of the extension.
-
-    cd che-theia-factory-frontend-extension
-    yarn watch
-
-Start watching of the browser example.
-
-    yarn rebuild:browser
-    cd browser-app
-    yarn watch
-
-Launch `Start Browser Backend` configuration from VS code.
-
-Open http://localhost:3000 in the browser.
-
-
-## Publishing extension
-
-Create a npm user and login to the npm registry, [more on npm publishing](https://docs.npmjs.com/getting-started/publishing-npm-packages).
-
-    npm login
-
-Publish packages with lerna to update versions properly across local packages, [more on publishing with lerna](https://github.com/lerna/lerna#publish).
-
-    npx lerna publish
