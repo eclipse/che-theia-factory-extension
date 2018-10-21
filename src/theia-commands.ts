@@ -79,7 +79,7 @@ export class TheiaCommand {
                     });
             }
         }
-        return new Promise(() => { console.error('action nor openfile nor run command') });
+        return new Promise(() => { console.error('action nor openfile nor run command'); });
 
     }
 

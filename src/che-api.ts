@@ -11,7 +11,7 @@
 import { FactoryService, IFactoryService } from './resources';
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
 import { IFactory, IFactoryAction } from './types';
-import { IProjectConfig } from '@eclipse-che/workspace-client';
+import WorkspaceClient, { IRemoteAPI, IWorkspace, IProjectConfig, IRestAPIConfig } from '@eclipse-che/workspace-client';
 import * as theia from '@theia/plugin';
 
 export class CheFactoryApi {
@@ -134,4 +134,61 @@ export class CheFactoryAction {
     public getProperties() {
         return this.properties;
     }
+}
+
+export class CheWorkspaceApi {
+    private workspaceRestAPI: IRemoteAPI | undefined;
+    private currentWorkspace: CheWorkspace | undefined;
+
+    async retrieveWorkspaceDefinition(): Promise<CheWorkspace | undefined> {
+        try {
+            const cheApiInternalVar = await theia.env.getEnvVariable('CHE_API_INTERNAL');
+            const cheMachineToken = await theia.env.getEnvVariable('CHE_MACHINE_TOKEN');
+            const cheWorkspaceId = await theia.env.getEnvVariable('CHE_WORKSPACE_ID');
+
+            if (!cheApiInternalVar || !cheWorkspaceId) {
+                return undefined;
+            }
+
+            if (!this.workspaceRestAPI) {
+                const restAPIConfig: IRestAPIConfig = {
+                    baseUrl: cheApiInternalVar,
+                    headers: {}
+                };
+                if (cheMachineToken) {
+                    restAPIConfig.headers['Authorization'] = "Bearer " + cheMachineToken;
+                }
+
+                this.workspaceRestAPI = await WorkspaceClient.getRestApi(restAPIConfig);
+            }
+
+            const workspaceConfig = await this.workspaceRestAPI.getById<IWorkspace>(cheWorkspaceId);
+            this.currentWorkspace = new CheWorkspace(workspaceConfig);
+
+        } catch (e) {
+            theia.window.showErrorMessage("Failed to fetch workspace definition: " + e.message);
+        }
+        return this.currentWorkspace;
+    }
+
+    getCurrentWorkspace(): CheWorkspace | undefined {
+        return this.currentWorkspace;
+    }
+
+}
+
+export class CheWorkspace {
+    constructor(
+        protected workspace: IWorkspace | undefined
+    ) {
+    }
+
+    getProjects(): CheProject[] {
+        if (!this.workspace || !this.workspace.config.projects) {
+            return [];
+        }
+
+        return this.workspace.config.projects.map((project: IProjectConfig) => new CheProject(project));
+    }
+
 }
