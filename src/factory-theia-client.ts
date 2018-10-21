@@ -8,7 +8,7 @@
  * SPDX-License-Identifier: EPL-2.0
  **********************************************************************/
 import { TheiaCloneCommand, TheiaCommand } from './theia-commands';
-import { CheFactoryApi, CheFactory } from './che-factory-api';
+import { CheFactoryApi, CheFactory } from './che-api';
 import * as theia from '@theia/plugin';
 
 export enum ActionId {
