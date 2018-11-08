@@ -32,6 +32,9 @@ export class CheWorkspaceProjectManager {
         }
 
         const cloneCommandList = await this.selectProjectToCloneCommands(workspaceConfig);
+        if (cloneCommandList.length === 0) {
+            return;
+        }
         await this.executeCloneCommands(cloneCommandList);
 
     }
@@ -60,6 +63,7 @@ export class CheWorkspaceProjectManager {
     }
 
     private async executeCloneCommands(cloneCommandList: TheiaCloneCommand[]) {
+        theia.window.showInformationMessage("Che Workspace: Starting clonning projects.");
         await Promise.all(
             cloneCommandList.map(cloneCommand => cloneCommand.execute())
         );
