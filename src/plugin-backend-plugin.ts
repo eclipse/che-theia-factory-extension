@@ -12,7 +12,7 @@ import { FactoryTheiaClient } from "./factory-theia-client";
 import { CheWorkspaceProjectManager } from "./che-workspace-project-manager";
 
 export async function start() {
-    new FactoryTheiaClient().onStart();
+    await (new FactoryTheiaClient()).onStart();
     new CheWorkspaceProjectManager().onStart();
 }
 
