@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/eclipse/che-theia-factory-extension.svg?branch=master)](https://travis-ci.org/eclipse/che-theia-factory-extension)
+
 # Che Theia factory
 This Theia plug-in is performing additional actions while creating/starting a Che workspace through a factory URL.
 Provides basic factory client side clone feature
