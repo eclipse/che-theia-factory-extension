@@ -91,7 +91,7 @@ export class FactoryTheiaClient {
         await Promise.all(
             cloneCommandList.map(cloneCommand => cloneCommand.execute())
         );
-        theia.window.showInformationMessage("Che Factory: Finished clonning projects.");
+        theia.window.showInformationMessage("Che Factory: Finished cloning projects.");
     }
 
     private async executeOnProjectsImportedCommands(onProjectImportedCommandList: TheiaCommand[]) {

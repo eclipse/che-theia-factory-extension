@@ -63,11 +63,11 @@ export class CheWorkspaceProjectManager {
     }
 
     private async executeCloneCommands(cloneCommandList: TheiaCloneCommand[]) {
-        theia.window.showInformationMessage("Che Workspace: Starting clonning projects.");
+        theia.window.showInformationMessage("Che Workspace: Starting cloning projects.");
         await Promise.all(
             cloneCommandList.map(cloneCommand => cloneCommand.execute())
         );
-        theia.window.showInformationMessage("Che Workspace: Finished clonning projects.");
+        theia.window.showInformationMessage("Che Workspace: Finished cloning projects.");
     }
 
 }
