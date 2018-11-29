@@ -8,7 +8,7 @@
  * SPDX-License-Identifier: EPL-2.0
  **********************************************************************/
 import * as theia from '@theia/plugin';
-
+import convertToFileURI from './openfile';
 const CHE_TASK_TYPE = 'che';
 
 /**
@@ -58,7 +58,8 @@ export class TheiaCommand {
 
         if (this.id === ActionId.OPEN_FILE) {
             if (this.properties && this.properties.file) {
-                return theia.commands.executeCommand('file-search.openFile', this.properties.file)
+                const fileLocation = convertToFileURI(this.properties.file);
+                return theia.commands.executeCommand('file-search.openFile', fileLocation)
                     .then(() => {
 
                     }, e => {
