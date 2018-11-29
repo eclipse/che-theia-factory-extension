@@ -11,6 +11,9 @@
   "devDependencies": {
     "@theia/plugin": "^0.4.0-next.ac580dd6",
     "@theia/plugin-packager": "^0.0.1-1539891078",
+    "@types/jest": "22.2.3",
+    "jest": "22.4.3",
+    "ts-jest": "22.4.3",
     "rimraf": "2.6.2",
     "tslint": "5.10.0",
     "typescript": "2.9.2",
@@ -21,18 +24,42 @@
     "axios": "0.18.0"
   },
   "scripts": {
-    "prepare": "yarn run clean && yarn run build",
+    "prepare": "yarn run clean && yarn run build && yarn tslint-fix && yarn run test",
     "clean": "rimraf lib",
     "format-code": "tsfmt -r",
     "watch": "tsc -watch",
     "compile": "tsc",
     "build": "yarn run format-code && yarn run compile && theia:plugin pack",
-    "tslint-fix": "tslint --fix --project ."
+    "tslint-fix": "tslint --fix --project .",
+    "test": "jest",
+    "test-watch": "jest --watchAll"
   },
   "engines": {
     "theiaPlugin": "next"
   },
   "theiaPlugin": {
     "backend": "lib/plugin-backend-plugin.js"
+  },
+  "jest": {
+    "collectCoverage": true,
+    "collectCoverageFrom": [
+      "src/**/*.ts"
+    ],
+    "coverageDirectory": "./coverage",
+    "transform": {
+      "^.+\\.tsx?$": "<rootDir>/node_modules/ts-jest/preprocessor.js"
+    },
+    "modulePathIgnorePatterns": [
+      "<rootDir>/lib"
+    ],
+    "testRegex": "(/__tests__/.*|(\\.|/)(test|spec))\\.(jsx?|tsx?)$",
+    "moduleFileExtensions": [
+      "ts",
+      "tsx",
+      "js",
+      "jsx",
+      "json"
+    ],
+    "testURL": "http://localhost/"
   }
 }
