@@ -8,12 +8,19 @@
  * SPDX-License-Identifier: EPL-2.0
  **********************************************************************/
 
+import * as theia from '@theia/plugin';
 import { FactoryTheiaClient } from "./factory-theia-client";
 import { CheWorkspaceProjectManager } from "./che-workspace-project-manager";
 
 export async function start() {
-    await (new FactoryTheiaClient()).onStart();
-    new CheWorkspaceProjectManager().onStart();
+    let projectsRoot = '/projects';
+    const projectsRootEnvVar = await theia.env.getEnvVariable('CHE_PROJECTS_ROOT');
+    if (projectsRootEnvVar) {
+        projectsRoot = projectsRootEnvVar;
+    }
+
+    await new FactoryTheiaClient(projectsRoot).start();
+    await new CheWorkspaceProjectManager(projectsRoot).start();
 }
 
 export function stop() {

@@ -9,8 +9,8 @@
  **********************************************************************/
 
 import { TheiaCloneCommand } from './theia-commands';
-import { CheWorkspaceApi, CheWorkspace } from './che-api';
 import * as theia from '@theia/plugin';
+import * as che from '@eclipse-che/plugin';
 const fs = require('fs');
 
 /**
@@ -18,55 +18,40 @@ const fs = require('fs');
  */
 export class CheWorkspaceProjectManager {
 
-    private readonly cheWorkspaceApi: CheWorkspaceApi;
-
-    constructor() {
-        this.cheWorkspaceApi = new CheWorkspaceApi();
+    constructor(protected projectsRoot: string) {
     }
 
-    async onStart() {
-        const workspaceConfig = await this.getCurrentWorkspaceConfigFromCheMaster();
-        if (!workspaceConfig) {
-            theia.window.showErrorMessage('No Che workspace could be found');
-            return;
-        }
+    async start() {
+        const workspace = await che.workspace.getCurrentWorkspace();
 
-        const cloneCommandList = await this.selectProjectToCloneCommands(workspaceConfig);
+        const cloneCommandList = await this.selectProjectToCloneCommands(workspace);
         if (cloneCommandList.length === 0) {
             return;
         }
+
         await this.executeCloneCommands(cloneCommandList);
-
     }
 
-    private async getCurrentWorkspaceConfigFromCheMaster(): Promise<CheWorkspace | undefined> {
-        return await this.cheWorkspaceApi.retrieveWorkspaceDefinition();
-    }
+    async selectProjectToCloneCommands(workspace: che.Workspace): Promise<TheiaCloneCommand[]> {
+        const instance = this;
 
-    async selectProjectToCloneCommands(workspaceConfig: CheWorkspace): Promise<TheiaCloneCommand[]> {
-        let projectsRoot = '/projects';
-        const projectsRootEnvVar = await theia.env.getEnvVariable('CHE_PROJECTS_ROOT');
-        if (projectsRootEnvVar) {
-            projectsRoot = projectsRootEnvVar;
+        const projects = workspace.config.projects;
+        if (!projects) {
+            return [];
         }
 
-        const projects = workspaceConfig.getProjects();
-
         return projects
-            .filter(
-                project => !fs.existsSync(projectsRoot + project.getPath()))
-            .map(
-                project => new TheiaCloneCommand(
-                    project.getLocationURI(),
-                    projectsRoot + project.getPath(),
-                    project.getCheckoutBranch()));
+            .filter(project => !fs.existsSync(instance.projectsRoot + project.path))
+            .map(project => new TheiaCloneCommand(project, instance.projectsRoot));
     }
 
     private async executeCloneCommands(cloneCommandList: TheiaCloneCommand[]) {
         theia.window.showInformationMessage("Che Workspace: Starting cloning projects.");
+
         await Promise.all(
             cloneCommandList.map(cloneCommand => cloneCommand.execute())
         );
+
         theia.window.showInformationMessage("Che Workspace: Finished cloning projects.");
     }
 
