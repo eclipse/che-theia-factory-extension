@@ -5,3 +5,4 @@ lib
 *-app/*
 !*-app/package.json
 coverage
+eclipse_che_theia_factory_plugin.theia
