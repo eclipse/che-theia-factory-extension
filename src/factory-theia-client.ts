@@ -43,8 +43,6 @@ export class FactoryTheiaClient {
             return;
         }
 
-        console.info("Che Factory setup ...");
-
         const cloneCommandList = await this.extractCloneCommands(factory);
         const onProjectsImportedCommandList = this.extractOnProjectsImportedCommands(factory);
 
