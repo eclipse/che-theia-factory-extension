@@ -18,7 +18,7 @@
     esutils "^2.0.2"
     js-tokens "^4.0.0"
 
-"@eclipse-che/plugin@^0.0.1-1545397371":
+"@eclipse-che/plugin@^0.0.1-1545399167":
   version "0.0.1-1545399167"
   resolved "https://registry.yarnpkg.com/@eclipse-che/plugin/-/plugin-0.0.1-1545399167.tgz#5435be61b92447a3ef05be32ac93d0cfe72b6c81"
   integrity sha512-TgbwLk6KoDi6yDB9S9wWBYeRTv2hwJeM+W5OGFcKEcls6skAoqlJnLyu7OqTYA00sy/Ul+NnnnjK3ksV2m41Mg==

@@ -9,8 +9,8 @@
  **********************************************************************/
 
 import * as theia from '@theia/plugin';
-import { FactoryTheiaClient } from "./factory-theia-client";
-import { CheWorkspaceProjectManager } from "./che-workspace-project-manager";
+import { FactoryProjectsManager } from "./factory-projects-manager";
+import { WorkspaceProjectsManager } from "./workspace-projects-manager";
 
 export async function start() {
     let projectsRoot = '/projects';
@@ -19,8 +19,8 @@ export async function start() {
         projectsRoot = projectsRootEnvVar;
     }
 
-    await new FactoryTheiaClient(projectsRoot).start();
-    await new CheWorkspaceProjectManager(projectsRoot).start();
+    await new FactoryProjectsManager(projectsRoot).run();
+    await new WorkspaceProjectsManager(projectsRoot).run();
 }
 
 export function stop() {

@@ -23,12 +23,12 @@ export enum ActionId {
  * - clone the projects defined in the factory definition
  * - checkout branch if needed
  */
-export class FactoryTheiaClient {
+export class FactoryProjectsManager {
 
     constructor(protected projectsRoot: string) {
     }
 
-    async start() {
+    async run() {
         const factoryId = theia.env.getQueryParameter('factory-id');
 
         if (!factoryId || typeof factoryId !== 'string') {
@@ -39,24 +39,33 @@ export class FactoryTheiaClient {
         try {
             factory = await che.factory.getById(factoryId);
         } catch (e) {
-            theia.window.showErrorMessage('Unable to get factory. ' + e.message);
+            theia.window.showErrorMessage(`Unable to get factory. ${e.message}`);
             return;
         }
 
-        const cloneCommandList = await this.extractCloneCommands(factory);
-        const onProjectsImportedCommandList = this.extractOnProjectsImportedCommands(factory);
+        // Clone Factory projects
+        const cloneCommands = await this.getCloneCommands(factory);
+        if (cloneCommands.length > 0) {
+            await this.executeCloneCommands(cloneCommands);
+        }
+
+        // Perform actions after cloning Factory projects
+        const onProjectsImportedCommands = this.getOnProjectsImportedCommands(factory);
+        if (onProjectsImportedCommands.length > 0) {
+            await this.executeOnProjectsImportedCommands(onProjectsImportedCommands);
+        }
 
         // TODO const onAppLoadedCommandList = factory.getOnAppLoadedActions().map(action => new TheiaCommand(action.id, action.parameters));
         // TODO const onAppClosedCommandList = factory.getOnAppLoadedActions().map(action => new TheiaCommand(action.id, action.parameters));
         // TODO register trigger for on appClosed ... onStop method ?
         // - on web app closed
         // TODO await this.executeOnAppLoadedCommands(onAppLoadedCommandList)
-
-        await this.executeCloneCommands(cloneCommandList);
-        await this.executeOnProjectsImportedCommands(onProjectsImportedCommandList);
     }
 
-    private async extractCloneCommands(factory: che.Factory) {
+    /**
+     * Returns a list of commands to clone Factory projects
+     */
+    private async getCloneCommands(factory: che.Factory) {
         const instance = this;
 
         if (!factory.workspace || !factory.workspace.projects) {
@@ -68,7 +77,10 @@ export class FactoryTheiaClient {
         );
     }
 
-    private extractOnProjectsImportedCommands(factory: che.Factory) {
+    /**
+     * Returns a list of commands to be executed after cloning the projects
+     */
+    private getOnProjectsImportedCommands(factory: che.Factory) {
         if (!factory.ide || !factory.ide.onProjectsLoaded || !factory.ide.onProjectsLoaded.actions) {
             return [];
         }
@@ -78,17 +90,17 @@ export class FactoryTheiaClient {
         );
     }
 
-    private async executeCloneCommands(cloneCommandList: TheiaCloneCommand[]) {
+    private async executeCloneCommands(cloneCommands: TheiaCloneCommand[]) {
         await Promise.all(
-            cloneCommandList.map(cloneCommand => cloneCommand.execute())
+            cloneCommands.map(command => command.execute())
         );
 
         theia.window.showInformationMessage("Che Factory: Finished cloning projects.");
     }
 
-    private async executeOnProjectsImportedCommands(onProjectImportedCommandList: TheiaCommand[]) {
+    private async executeOnProjectsImportedCommands(onProjectImportedCommands: TheiaCommand[]) {
         await Promise.all(
-            onProjectImportedCommandList.map(onProjectImportedCommand => onProjectImportedCommand.execute())
+            onProjectImportedCommands.map(command => command.execute())
         );
 
         theia.window.showInformationMessage("Che Factory: Finished executing 'onProjectImported' command actions.");

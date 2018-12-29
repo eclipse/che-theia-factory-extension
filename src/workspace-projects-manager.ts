@@ -16,12 +16,12 @@ const fs = require('fs');
 /**
  * Make synchronization between projects defined in Che workspace and theia projects.
  */
-export class CheWorkspaceProjectManager {
+export class WorkspaceProjectsManager {
 
     constructor(protected projectsRoot: string) {
     }
 
-    async start() {
+    async run() {
         const workspace = await che.workspace.getCurrentWorkspace();
 
         const cloneCommandList = await this.selectProjectToCloneCommands(workspace);
