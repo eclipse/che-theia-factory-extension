@@ -23,7 +23,7 @@ export enum ActionId {
  * - clone the projects defined in the factory definition
  * - checkout branch if needed
  */
-export class FactoryProjectsManager {
+export class FactoryInitializer {
 
     constructor(protected projectsRoot: string) {
     }
@@ -45,15 +45,11 @@ export class FactoryProjectsManager {
 
         // Clone Factory projects
         const cloneCommands = await this.getCloneCommands(factory);
-        if (cloneCommands.length > 0) {
-            await this.executeCloneCommands(cloneCommands);
-        }
+        await this.executeCloneCommands(cloneCommands);
 
         // Perform actions after cloning Factory projects
         const onProjectsImportedCommands = this.getOnProjectsImportedCommands(factory);
-        if (onProjectsImportedCommands.length > 0) {
-            await this.executeOnProjectsImportedCommands(onProjectsImportedCommands);
-        }
+        await this.executeOnProjectsImportedCommands(onProjectsImportedCommands);
 
         // TODO const onAppLoadedCommandList = factory.getOnAppLoadedActions().map(action => new TheiaCommand(action.id, action.parameters));
         // TODO const onAppClosedCommandList = factory.getOnAppLoadedActions().map(action => new TheiaCommand(action.id, action.parameters));
@@ -91,6 +87,10 @@ export class FactoryProjectsManager {
     }
 
     private async executeCloneCommands(cloneCommands: TheiaCloneCommand[]) {
+        if (cloneCommands.length === 0) {
+            return;
+        }
+
         await Promise.all(
             cloneCommands.map(command => command.execute())
         );
@@ -98,9 +98,13 @@ export class FactoryProjectsManager {
         theia.window.showInformationMessage("Che Factory: Finished cloning projects.");
     }
 
-    private async executeOnProjectsImportedCommands(onProjectImportedCommands: TheiaCommand[]) {
+    private async executeOnProjectsImportedCommands(onProjectsImportedCommands: TheiaCommand[]) {
+        if (onProjectsImportedCommands.length === 0) {
+            return;
+        }
+
         await Promise.all(
-            onProjectImportedCommands.map(command => command.execute())
+            onProjectsImportedCommands.map(command => command.execute())
         );
 
         theia.window.showInformationMessage("Che Factory: Finished executing 'onProjectImported' command actions.");

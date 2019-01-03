@@ -9,7 +9,7 @@
  **********************************************************************/
 
 import * as theia from '@theia/plugin';
-import { FactoryProjectsManager } from "./factory-projects-manager";
+import { FactoryInitializer } from "./factory-initializer";
 import { WorkspaceProjectsManager } from "./workspace-projects-manager";
 
 export async function start() {
@@ -19,7 +19,7 @@ export async function start() {
         projectsRoot = projectsRootEnvVar;
     }
 
-    await new FactoryProjectsManager(projectsRoot).run();
+    await new FactoryInitializer(projectsRoot).run();
     await new WorkspaceProjectsManager(projectsRoot).run();
 }
 
