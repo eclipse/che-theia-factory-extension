@@ -8,7 +8,9 @@
  * SPDX-License-Identifier: EPL-2.0
  **********************************************************************/
 import * as theia from '@theia/plugin';
+import * as che from '@eclipse-che/plugin';
 import convertToFileURI from './openfile';
+
 const CHE_TASK_TYPE = 'che';
 
 /**
@@ -20,15 +22,19 @@ export enum ActionId {
 }
 
 export class TheiaCloneCommand {
-    constructor(
-        protected readonly locationURI: string | undefined,
-        protected readonly folder: string,
-        protected readonly checkoutBranch?: string | undefined
-    ) {
+
+    private locationURI: string | undefined;
+    private folder: string;
+    private checkoutBranch?: string | undefined;
+
+    constructor(project: che.ProjectConfig, projectsRoot: string) {
+        this.locationURI = project.source && project.source.location ? project.source.location : undefined;
+        this.folder = projectsRoot + project.path;
+        this.checkoutBranch = project.source && project.source.parameters && project.source.parameters['branch'] ?
+            project.source.parameters['branch'] : undefined;
     }
 
     execute(): PromiseLike<void> {
-
         if (!this.locationURI) {
             return new Promise(() => { });
         }
@@ -41,8 +47,11 @@ export class TheiaCloneCommand {
                 console.log(`Couldnt clone ${this.locationURI}`, e);
             });
     }
+
 }
+
 export class TheiaCommand {
+
     constructor(
         protected readonly id: string,
         protected readonly properties?: {
@@ -55,7 +64,6 @@ export class TheiaCommand {
     }
 
     execute(): PromiseLike<void> {
-
         if (this.id === ActionId.OPEN_FILE) {
             if (this.properties && this.properties.file) {
                 const fileLocation = convertToFileURI(this.properties.file);
@@ -80,8 +88,8 @@ export class TheiaCommand {
                     });
             }
         }
-        return new Promise(() => { console.error('action nor openfile nor run command'); });
 
+        return new Promise(() => { console.error('action nor openfile nor run command'); });
     }
 
 }

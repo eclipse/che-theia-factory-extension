@@ -11,6 +11,7 @@
   "devDependencies": {
     "@theia/plugin": "^0.4.0-next.ac580dd6",
     "@theia/plugin-packager": "^0.0.1-1539891078",
+    "@eclipse-che/plugin": "^0.0.1-1546522786",
     "@types/jest": "22.2.3",
     "jest": "22.4.3",
     "ts-jest": "22.4.3",
@@ -18,10 +19,6 @@
     "tslint": "5.10.0",
     "typescript": "2.9.2",
     "typescript-formatter": "7.2.2"
-  },
-  "dependencies": {
-    "@eclipse-che/workspace-client": "latest",
-    "axios": "0.18.0"
   },
   "scripts": {
     "prepare": "yarn run clean && yarn run build && yarn tslint-fix && yarn run test",
@@ -38,7 +35,7 @@
     "theiaPlugin": "next"
   },
   "theiaPlugin": {
-    "backend": "lib/plugin-backend-plugin.js"
+    "backend": "lib/factory-plugin.js"
   },
   "jest": {
     "collectCoverage": true,
