@@ -9,6 +9,8 @@
  **********************************************************************/
 import * as theia from '@theia/plugin';
 import * as che from '@eclipse-che/plugin';
+import { che as cheApi } from '@eclipse-che/api';
+
 import { TheiaCloneCommand, TheiaCommand } from './theia-commands';
 
 export enum ActionId {
@@ -35,7 +37,7 @@ export class FactoryInitializer {
             return;
         }
 
-        let factory: che.Factory;
+        let factory: cheApi.factory.Factory;
         try {
             factory = await che.factory.getById(factoryId);
         } catch (e) {
@@ -61,7 +63,7 @@ export class FactoryInitializer {
     /**
      * Returns a list of commands to clone Factory projects
      */
-    private async getCloneCommands(factory: che.Factory) {
+    private async getCloneCommands(factory: cheApi.factory.Factory) {
         const instance = this;
 
         if (!factory.workspace || !factory.workspace.projects) {
@@ -76,13 +78,13 @@ export class FactoryInitializer {
     /**
      * Returns a list of commands to be executed after cloning the projects
      */
-    private getOnProjectsImportedCommands(factory: che.Factory) {
+    private getOnProjectsImportedCommands(factory: cheApi.factory.Factory) {
         if (!factory.ide || !factory.ide.onProjectsLoaded || !factory.ide.onProjectsLoaded.actions) {
             return [];
         }
 
         return factory.ide.onProjectsLoaded.actions.map(
-            action => new TheiaCommand(action.id, action.properties)
+            action => new TheiaCommand(action.id!, action.properties)
         );
     }
 
