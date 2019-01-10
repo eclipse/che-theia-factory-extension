@@ -8,7 +8,7 @@
  * SPDX-License-Identifier: EPL-2.0
  **********************************************************************/
 import * as theia from '@theia/plugin';
-import * as che from '@eclipse-che/plugin';
+import { che as cheApi } from '@eclipse-che/api';
 import convertToFileURI from './openfile';
 
 const CHE_TASK_TYPE = 'che';
@@ -27,7 +27,7 @@ export class TheiaCloneCommand {
     private folder: string;
     private checkoutBranch?: string | undefined;
 
-    constructor(project: che.ProjectConfig, projectsRoot: string) {
+    constructor(project: cheApi.workspace.ProjectConfig, projectsRoot: string) {
         this.locationURI = project.source && project.source.location ? project.source.location : undefined;
         this.folder = projectsRoot + project.path;
         this.checkoutBranch = project.source && project.source.parameters && project.source.parameters['branch'] ?

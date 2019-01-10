@@ -11,6 +11,8 @@
 import { TheiaCloneCommand } from './theia-commands';
 import * as theia from '@theia/plugin';
 import * as che from '@eclipse-che/plugin';
+import { che as cheApi } from '@eclipse-che/api';
+
 const fs = require('fs');
 
 /**
@@ -32,10 +34,10 @@ export class WorkspaceProjectsManager {
         await this.executeCloneCommands(cloneCommandList);
     }
 
-    async selectProjectToCloneCommands(workspace: che.Workspace): Promise<TheiaCloneCommand[]> {
+    async selectProjectToCloneCommands(workspace: cheApi.workspace.Workspace): Promise<TheiaCloneCommand[]> {
         const instance = this;
 
-        const projects = workspace.config.projects;
+        const projects = workspace.config!.projects;
         if (!projects) {
             return [];
         }
