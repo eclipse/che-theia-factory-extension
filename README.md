@@ -1,6 +1,6 @@
 # Deprecated
 
-This repository is deprecated.
+This repository is deprecated and not actual anymore.
 The code has been moved to https://github.com/eclipse/che-theia/tree/master/plugins/factory-plugin
 
 # Che Theia factory
