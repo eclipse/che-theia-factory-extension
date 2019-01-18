@@ -8,7 +8,7 @@
  *   Red Hat, Inc. - initial API and implementation
  */
 import { TheiaCommand } from "../src/theia-commands";
-import convertToFileURI from "../src/openfile"
+import { convertToFileURI, convertToCheProjectPath} from "../src/file-uri"
 
 describe("Test exec commands", () => {
 
@@ -23,5 +23,16 @@ describe("Test exec commands", () => {
         expect(convertToFileURI('/che/README.md', '/test-projects')).toBe('file:///test-projects/che/README.md');
         expect(convertToFileURI('/che/README.md', 'file:///test-projects')).toBe('file:///test-projects/che/README.md');
         expect(convertToFileURI('/che/README.md', 'test-projects')).toBe('file:///test-projects/che/README.md');
+        expect(convertToFileURI('/che/', 'test-projects')).toBe('file:///test-projects/che/');
+
+    });
+});
+
+describe("Testing convertion of project paths to be stored in the workspace config", () => {
+    test("converting project paths", async () => {
+        expect(convertToCheProjectPath('/projects/che-factory-extension/', '/projects')).toBe('/che-factory-extension');
+        expect(convertToCheProjectPath('/projects/che-factory-extension', '/projects')).toBe('/che-factory-extension');
+        expect(convertToCheProjectPath('/projects/che/che-factory-extension/', '/projects')).toBe('/che/che-factory-extension');
+        expect(convertToCheProjectPath('/projects/theiadev_projects/blog.sunix.org/', '/projects/theiadev_projects')).toBe('/blog.sunix.org');
     });
 });

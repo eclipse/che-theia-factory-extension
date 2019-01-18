@@ -9,8 +9,11 @@
  **********************************************************************/
 
 import { TheiaCloneCommand } from './theia-commands';
-import * as theia from '@theia/plugin';
 import * as che from '@eclipse-che/plugin';
+import * as theia from '@theia/plugin';
+import * as git from './git';
+import * as projectshelper from "./projects";
+import * as fileuri from "./file-uri";
 const fs = require('fs');
 
 /**
@@ -18,10 +21,13 @@ const fs = require('fs');
  */
 export class WorkspaceProjectsManager {
 
+    watchers: theia.FileSystemWatcher[] = [];
+
     constructor(protected projectsRoot: string) {
     }
 
     async run() {
+        await this.syncWorkspace();
         const workspace = await che.workspace.getCurrentWorkspace();
 
         const cloneCommandList = await this.selectProjectToCloneCommands(workspace);
@@ -55,4 +61,47 @@ export class WorkspaceProjectsManager {
         theia.window.showInformationMessage("Che Workspace: Finished cloning projects.");
     }
 
+    async syncWorkspace() {
+        const gitConfigPattern = '**/.git/{HEAD,config}';
+        const gitConfigWatcher = theia.workspace.createFileSystemWatcher(gitConfigPattern);
+        gitConfigWatcher.onDidCreate(uri => this.updateOrCreateGitProjectInWorkspace(git.getGitRootFolder(uri.path)));
+        gitConfigWatcher.onDidChange(uri => this.updateOrCreateGitProjectInWorkspace(git.getGitRootFolder(uri.path)));
+        gitConfigWatcher.onDidDelete(uri => this.deleteGitProjectInWorkspace(git.getGitRootFolder(uri.path)));
+        this.watchers.push(gitConfigWatcher);
+    }
+
+    async updateOrCreateGitProjectInWorkspace(projectFolderURI: string) {
+        const currentWorkspace = await che.workspace.getCurrentWorkspace();
+        if (!currentWorkspace.id) {
+            console.error('Unexpected error: current workspace id is not defined');
+            return;
+        }
+
+        const projectBranch: git.GitBranch | undefined = await git.getCurrentBranch(projectFolderURI);
+        if (!projectBranch || !projectBranch.upstreamBranch || !projectBranch.upstreamBranch.remoteURL) {
+            console.error(`Could not detect git project branch for ${projectFolderURI}`);
+            return;
+        }
+
+        projectshelper.updateOrCreateGitProject(currentWorkspace.config.projects,
+            fileuri.convertToCheProjectPath(projectFolderURI, this.projectsRoot),
+            projectBranch.upstreamBranch.remoteURL,
+            projectBranch.upstreamBranch.branch);
+
+        await che.workspace.update(currentWorkspace.id, currentWorkspace);
+    }
+
+    async deleteGitProjectInWorkspace(projectFolderURI: string) {
+        const currentWorkspace = await che.workspace.getCurrentWorkspace();
+        if (!currentWorkspace.id) {
+            console.error('Unexpected error: current workspace id is not defined');
+            return;
+        }
+
+        projectshelper.deleteGitProject(currentWorkspace.config.projects,
+            fileuri.convertToCheProjectPath(projectFolderURI, this.projectsRoot)
+        );
+
+        await che.workspace.update(currentWorkspace.id, currentWorkspace);
+    }
 }

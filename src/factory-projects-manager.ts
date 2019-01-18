@@ -104,6 +104,7 @@ export class FactoryProjectsManager {
         );
 
         theia.window.showInformationMessage("Che Factory: Finished executing 'onProjectImported' command actions.");
+
     }
 
 }

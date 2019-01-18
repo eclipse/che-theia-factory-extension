@@ -8,7 +8,7 @@
  * SPDX-License-Identifier: EPL-2.0
  **********************************************************************/
 
-export default function convertToFileURI(file: string, rootFolder?: string): string {
+export function convertToFileURI(file: string, rootFolder?: string): string {
     if (file.startsWith('file://')) {
         return file;
     }
@@ -29,4 +29,20 @@ export default function convertToFileURI(file: string, rootFolder?: string): str
     }
     return `file://${rootFolder}${file}`;
 
+}
+
+export function convertToCheProjectPath(fileURI: string, rootFolder: string): string {
+    if (rootFolder.endsWith('/')) {
+        rootFolder = rootFolder.substring(0, rootFolder.length - 1);
+    }
+
+    if (fileURI.endsWith('/')) {
+        fileURI = fileURI.substring(0, fileURI.length - 1);
+    }
+
+    if (fileURI.startsWith(rootFolder)) {
+        return fileURI.substring(rootFolder.length);
+    }
+
+    return fileURI;
 }
